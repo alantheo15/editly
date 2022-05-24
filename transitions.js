@@ -16,6 +16,10 @@ function easeInOutCubic(x) {
   return x < 0.5 ? 4 * x * x * x : 1 - ((-2 * x + 2) ** 3) / 2;
 }
 
+function easeOutSine(x) {
+  return Math.sin((x * Math.PI) / 2);
+}
+
 function getTransitionEasingFunction(easing, transitionName) {
   if (easing !== null) {
     if (easing) return { easeOutExpo }[easing];
@@ -65,4 +69,5 @@ module.exports = {
   calcTransition,
   easeInOutCubic,
   easeOutExpo,
+  easeOutSine,
 };

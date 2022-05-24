@@ -2,7 +2,7 @@ const { fabric } = require('fabric');
 const fileUrl = require('file-url');
 
 const { getRandomGradient, getRandomColors } = require('../../colors');
-const { easeOutExpo, easeInOutCubic } = require('../../transitions');
+const { easeOutExpo, easeInOutCubic, easeOutSine } = require('../../transitions');
 const { getPositionProps, getFrameByKeyFrames, isUrl } = require('../../util');
 const { blurImage } = require('../fabric');
 
@@ -169,6 +169,56 @@ async function linearGradientFrameSource({ width, height, params }) {
 
     rect.rotate(progress * 30);
     canvas.add(rect);
+  }
+
+  return { onRender };
+}
+
+async function textFrameSource({ width, height, params }) {
+  const { text, fadeIn = false, fadeOut = false, fontSize = 0.05, textColor = '#ffffff', fontFamily = defaultFontFamily, position = 'center', zoomDirection = null, zoomAmount = 0.2, speed = 0 } = params;
+
+  async function onRender(progress, canvas) {
+    // console.log('progress', progress);
+
+    const min = Math.min(width, height);
+
+    const fontSizeAbs = Math.round(width * fontSize);
+
+    const scaleFactor = getZoomParams({ progress, zoomDirection, zoomAmount });
+
+    let delay = 1 - (speed / 10);
+
+    let easedInProgress = easeInOutCubic(Math.max(0, Math.min(progress * speed, 1)));
+    let easedOutProgress = 1 - easeOutSine(Math.max(0, Math.min((progress - delay) * speed, 1)));
+
+    let opacity = easedInProgress;
+
+    if (fadeIn === false) opacity = 1;
+    if (fadeOut === true && easedInProgress == 1) opacity = easedOutProgress;
+
+    const textBox = new fabric.Textbox(text, {
+      fill: textColor,
+      fontFamily,
+      fontSize: fontSizeAbs,
+      textAlign: 'center',
+      width: width * 0.8,
+      opacity:opacity
+    });
+
+    // We need the text as an image in order to scale it
+    const textImage = await new Promise((r) => textBox.cloneAsImage(r));
+
+    const { left, top, originX, originY } = getPositionProps({ position, width, height });
+
+    textImage.set({
+      originX,
+      originY,
+      left,
+      top,
+      scaleX: scaleFactor,
+      scaleY: scaleFactor
+    });
+    canvas.add(textImage);
   }
 
   return { onRender };
@@ -412,4 +462,5 @@ module.exports = {
   imageFrameSource,
   imageOverlayFrameSource,
   slideInTextFrameSource,
+  textFrameSource,
 };
