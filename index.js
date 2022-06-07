@@ -32,6 +32,8 @@ const Editly = async (config = {}) => {
     audioTracks: arbitraryAudioIn = [],
     width: requestedWidth,
     height: requestedHeight,
+    widthFast,
+    heightFast,
     fps: requestedFps,
     defaults = {},
     audioFilePath: backgroundAudioPath,
@@ -124,10 +126,16 @@ const Editly = async (config = {}) => {
   }
 
   if (fast) {
-    const numPixelsEachDirection = 250;
-    const aspectRatio = width / height;
-    width = roundDimension(numPixelsEachDirection * Math.sqrt(aspectRatio));
-    height = roundDimension(numPixelsEachDirection * Math.sqrt(1 / aspectRatio));
+    if (typeof widthFast !== 'undefined' && typeof heightFast !== 'undefined') {
+      width = widthFast;
+      height = heightFast;
+    }
+    else {
+      const numPixelsEachDirection = 250;
+      const aspectRatio = width / height;
+      width = roundDimension(numPixelsEachDirection * Math.sqrt(aspectRatio));
+      height = roundDimension(numPixelsEachDirection * Math.sqrt(1 / aspectRatio));
+    }
   }
 
   assert(width, 'Width not specified or detected');
