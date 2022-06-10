@@ -55,7 +55,7 @@ module.exports = async ({ width: canvasWidth, height: canvasHeight, channels, fr
   let ptsFilter = '';
   if (speedFactor !== 1) {
     if (verbose) console.log('speedFactor', speedFactor);
-    ptsFilter = `setpts=${speedFactor}*PTS,`;
+    //ptsFilter = `setpts=${speedFactor}*PTS,`; // Suppression du ralenti 
   }
 
   const frameByteSize = targetWidth * targetHeight * channels;
