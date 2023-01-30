@@ -199,7 +199,8 @@ async function textFrameSource({ width, height, params }) {
     const textBox = new fabric.Textbox(text, {
       fill: textColor,
       fontFamily,
-      fontSize: fontSizeAbs,
+      // fontSize: fontSizeAbs,
+      fontSize: fontSize,
       textAlign: 'center',
       width: width * 0.8,
       opacity:opacity
