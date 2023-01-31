@@ -175,7 +175,7 @@ async function linearGradientFrameSource({ width, height, params }) {
 }
 
 async function textFrameSource({ width, height, params }) {
-  const { text, fadeIn = false, fadeOut = false, fontSize = 0.05, textColor = '#ffffff', fontFamily = defaultFontFamily, position = 'center', zoomDirection = null, zoomAmount = 0.2, speed = 0 } = params;
+  const { text, fadeIn = false, fadeOut = false, fontSize = 0.05, textColor = '#ffffff', fontFamily = defaultFontFamily, position = 'center', textAlign = 'center', zoomDirection = null, zoomAmount = 0.2, speed = 0 } = params;
 
   async function onRender(progress, canvas) {
     // console.log('progress', progress);
@@ -201,7 +201,8 @@ async function textFrameSource({ width, height, params }) {
       fontFamily,
       // fontSize: fontSizeAbs,
       fontSize: fontSize,
-      textAlign: 'center',
+      // textAlign: 'center',
+      textAlign,
       width: width * 0.8,
       opacity:opacity
     });
