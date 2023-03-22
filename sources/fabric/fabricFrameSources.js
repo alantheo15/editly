@@ -194,7 +194,7 @@ async function textFrameSource({ width, height, params }) {
     let opacity = easedInProgress;
 
     if (fadeIn === false) opacity = 1;
-    if (fadeOut === true && easedInProgress == 1) opacity = easedOutProgress;
+    //if (fadeOut === true && easedInProgress == 1) opacity = easedOutProgress;
 
     const textBox = new fabric.Textbox(text, {
       fill: textColor,
@@ -204,8 +204,10 @@ async function textFrameSource({ width, height, params }) {
       // textAlign: 'center',
       textAlign,
       width: width * textboxWidth,
-      opacity:opacity
+      opacity:easeOutExpo(progress)
     });
+
+    //console.log(text + ' : ' + opacity);
 
     // We need the text as an image in order to scale it
     const textImage = await new Promise((r) => textBox.cloneAsImage(r));
@@ -414,36 +416,40 @@ async function getFadedObject({ object, progress }) {
   return fadedImage;
 }
 
-async function slideInTextFrameSource({ width, height, params: { position, text, fontSize = 0.05, charSpacing = 0.1, color = '#ffffff', fontFamily = defaultFontFamily } = {} }) {
+async function textFrameSource({ width, height, params }) {
+  const { text, fadeIn = 0, fadeOut = 0, fontSize = 0.05, textColor = '#ffffff', fontFamily = defaultFontFamily, position = 'center', textAlign = 'center', zoomDirection = null, textboxWidth = 0.8, zoomAmount = 0.2 } = params;
+
   async function onRender(progress, canvas) {
-    const fontSizeAbs = Math.round(width * fontSize);
+
+    const scaleFactor = getZoomParams({ progress, zoomDirection, zoomAmount });
+
+    let easedInProgress = fadeIn ?  easeInOutCubic(Math.min(1, progress * (params.layerDuration / fadeIn))) : 1;
+    let easedOutProgress = fadeOut ? 1 - easeInOutCubic(Math.min(1, Math.max(0, (params.layerDuration * progress - (params.layerDuration - fadeOut)) / fadeOut))) : 1;
+    let opacity = Math.min(easedInProgress, easedOutProgress);
+
+    const textBox = new fabric.Textbox(text, {
+      fill: textColor,
+      fontFamily,
+      fontSize,
+      textAlign,
+      width: width * textboxWidth,
+      opacity
+    });
+
+    // We need the text as an image in order to scale it
+    const textImage = await new Promise((r) => textBox.cloneAsImage(r));
 
     const { left, top, originX, originY } = getPositionProps({ position, width, height });
 
-    const textBox = new fabric.Text(text, {
-      fill: color,
-      fontFamily,
-      fontSize: fontSizeAbs,
-      charSpacing: width * charSpacing,
-    });
-
-    const { opacity, textSlide } = getFrameByKeyFrames([
-      { t: 0.1, props: { opacity: 1, textSlide: 0 } },
-      { t: 0.3, props: { opacity: 1, textSlide: 1 } },
-      { t: 0.8, props: { opacity: 1, textSlide: 1 } },
-      { t: 0.9, props: { opacity: 0, textSlide: 1 } },
-    ], progress);
-
-    const fadedObject = await getFadedObject({ object: textBox, progress: easeInOutCubic(textSlide) });
-    fadedObject.setOptions({
+    textImage.set({
       originX,
       originY,
-      top,
       left,
-      opacity,
+      top,
+      scaleX: scaleFactor,
+      scaleY: scaleFactor
     });
-
-    canvas.add(fadedObject);
+    canvas.add(textImage);
   }
 
   return { onRender };
